@@ -5,7 +5,11 @@
 	</head>
 	<body>
 			{% for item in sorted_array%}
-			<p> {{ item}} </p>
+			<div class="w3-container">
+				<h3> {{ item.title }} </h3>
+				<p> {{ item.description }}</p>
+				<a href={{item.url}}><p> Link to original news article</p></a>
+			</div>
 			{% endfor %}
 	</body>
 </html>
