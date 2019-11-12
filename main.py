@@ -80,6 +80,8 @@ def callback():
     token_type = response_data["token_type"]
     expires_in = response_data["expires_in"]
     newsResponse = getNewsAPI()
+    print("News response, articles")
+    print(newsResponse['articles'])
     # Auth Step 6: Use the access token to access Spotify API
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
     
@@ -95,7 +97,6 @@ def getNewsAPI():
         url
     )
     newsResponse = json.loads(response.text)
-    print(newsResponse)
     return newsResponse
 
 if __name__ == "__main__":
