@@ -85,7 +85,7 @@ def callback():
     # Auth Step 6: Use the access token to access Spotify API
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
     
-    return render_template("index.html", sorted_array=newsResponse['articles'])
+    return render_template("index.html", news=newsResponse['articles'])
 
 
 def getNewsAPI():
