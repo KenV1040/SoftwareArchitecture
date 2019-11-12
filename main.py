@@ -84,9 +84,14 @@ def callback():
     # Auth Step 6: Use the access token to access Spotify API
     authorization_header = {"Authorization": "Bearer {}".format(access_token)}
     
-    newsResponse = getNewsAPI()
+    articles = getNewsAPI()
+    tones = []
 
-    return render_template("index.html", news=newsResponse['articles'])
+    for article in articles:
+        tone = analyzeNewsArticles(article['title'])
+        tones.append(tone)
+    print(tones)
+    return render_template("index.html", news=articles, lenTone = len(tones), tones = tones)
 
 
 # Retrieves the top headlines from the news api
@@ -99,11 +104,7 @@ def getNewsAPI():
         url
     )
     newsResponse = json.loads(response.text)
-    analyzeNewsArticles("I am angry")
-    for articles in newsResponse['articles']:
-        tone = analyzeNewsArticles(articles['title'])
-        print(newsResponse[articles])
-    return newsResponse
+    return newsResponse['articles']
 
 def analyzeNewsArticles(description):
     baseUrl = "https://gateway-lon.watsonplatform.net/tone-analyzer/api"

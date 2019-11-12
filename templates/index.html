@@ -6,12 +6,21 @@
 		<link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
 	</head>
 	<body>
-			{% for item in news%}
+			<!-- {% for item in news%}
 			<div class="w3-container">
 				<h3> {{ item.title }} </h3>
 				<p> {{ item.description }}</p>
 				<a href={{item.url}}><p> Link to original news article</p></a>
 			</div>
-			{% endfor %}
+			{% endfor %} -->
+
+			{%for i in range(0, lenTone)%} 
+				<div class="w3-container">
+					<h3> {{ news[i].title }} </h3>
+					<p> {{ news[i].description }}</p>
+					<p> {{ tones[i] }}</p>
+					<a href={{news[i].url}}><p> Link to original news article</p></a>
+				</div>
+			{%endfor%} 
 	</body>
 </html>
