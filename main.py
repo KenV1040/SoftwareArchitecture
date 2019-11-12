@@ -94,12 +94,27 @@ def getNewsAPI():
     apiKey = "b31dbb029fbc45c693c90dfad3065ee0"
     country = "gb"
     url = f"https://newsapi.org/v2/top-headlines?country={country}&apiKey={apiKey}"
-    print("Getting news api from " + url)
+    #print("Getting news api from " + url)
     response = requests.get(
         url
     )
     newsResponse = json.loads(response.text)
+    analyzeNewsArticles("test")
+    for articles in newsResponse['articles']:
+        print(articles['title'])
     return newsResponse
+
+def analyzeNewsArticles(description):
+    baseUrl = "https://gateway-lon.watsonplatform.net/tone-analyzer/api"
+    date = "2019-10-30"
+    url = f"{baseUrl}/v3/tone?text={description}&version={date}"
+    ibmKey = "mhxzYW5AIdLbOlZ5OHP1HnJj4aTGUMukXdgyX7qYA8Jp"
+    print(url)
+    response = requests.get(
+        url,
+        auth={"apiKey":ibmKey}
+    )
+    toneOfArticle = json.loads(response.text)
 
 if __name__ == "__main__":
     app.run(debug=True, port=PORT)
