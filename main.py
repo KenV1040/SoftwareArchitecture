@@ -100,23 +100,33 @@ def getNewsAPI():
     )
     newsResponse = json.loads(response.text)
     analyzeNewsArticles("I am angry")
-    #for articles in newsResponse['articles']:
-        #print(articles['title'])
+    for articles in newsResponse['articles']:
+        tone = analyzeNewsArticles(articles['title'])
+        print(newsResponse[articles])
     return newsResponse
 
 def analyzeNewsArticles(description):
     baseUrl = "https://gateway-lon.watsonplatform.net/tone-analyzer/api"
     date = "2019-10-30"
-    url = f"{baseUrl}/v3/tone?text={description}&version={date}"
+    #url = f"{baseUrl}/v3/tone?text={description}&version={date}"
+    url = f"{baseUrl}/v3/tone"
     ibmKey = "u_PrmzhBiR3WJ19oHXwFS526m71E1T8dcCCXcfdmmhtB"
-    print(url)
+    #print(url)
     response = requests.get(
         url,
-        auth=('apiKey', ibmKey)
+        auth=('apiKey', ibmKey),
+        params={
+            "text":description,
+            "version":date
+        }
     )
     toneOfArticle = json.loads(response.text)
-    print(f"response {response.status_code}")
-    print(toneOfArticle)
+    #print(f"response world {toneOfArticle}")
+    try:
+        print("description " + description + " " + toneOfArticle['document_tone']['tones'][0]['tone_name'])
+        return toneOfArticle['document_tone']['tones'][0]['tone_name']
+    except:
+        return "Failed"
 
 if __name__ == "__main__":
     app.run(debug=True, port=PORT)
