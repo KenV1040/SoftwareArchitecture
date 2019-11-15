@@ -43,91 +43,110 @@ SHOW_DIALOG_bool = True
 SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
 
 auth_query_parameters = {
-    "response_type": "code",
-    "redirect_uri": REDIRECT_URI,
-    "scope": SCOPE,
-    # "state": STATE,
-    # "show_dialog": SHOW_DIALOG_str,
-    "client_id": CLIENT_ID
+	"response_type": "code",
+	"redirect_uri": REDIRECT_URI,
+	"scope": SCOPE,
+	# "state": STATE,
+	# "show_dialog": SHOW_DIALOG_str,
+	"client_id": CLIENT_ID
 }
 
 
 @app.route("/")
 def index():
-    # Auth Step 1: Authorization
-    url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth_query_parameters.items()])
-    auth_url = "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
-    return redirect(auth_url)
+	# Auth Step 1: Authorization
+	url_args = "&".join(["{}={}".format(key, quote(val)) for key, val in auth_query_parameters.items()])
+	auth_url = "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
+	return redirect(auth_url)
 
 
 @app.route("/callback/q")
 def callback():
-    # Auth Step 4: Requests refresh and access tokens
-    auth_token = request.args['code']
-    code_payload = {
-        "grant_type": "authorization_code",
-        "code": str(auth_token),
-        "redirect_uri": REDIRECT_URI,
-        'client_id': CLIENT_ID,
-        'client_secret': CLIENT_SECRET,
-    }
-    post_request = requests.post(SPOTIFY_TOKEN_URL, data=code_payload)
+	# Auth Step 4: Requests refresh and access tokens
+	auth_token = request.args['code']
+	code_payload = {
+		"grant_type": "authorization_code",
+		"code": str(auth_token),
+		"redirect_uri": REDIRECT_URI,
+		'client_id': CLIENT_ID,
+		'client_secret': CLIENT_SECRET,
+	}
+	post_request = requests.post(SPOTIFY_TOKEN_URL, data=code_payload)
 
-    # Auth Step 5: Tokens are Returned to Application
-    response_data = json.loads(post_request.text)
-    access_token = response_data["access_token"]
-    refresh_token = response_data["refresh_token"]
-    token_type = response_data["token_type"]
-    expires_in = response_data["expires_in"]
-    #print("News response, articles")
-    #print(newsResponse['articles'])
-    # Auth Step 6: Use the access token to access Spotify API
-    authorization_header = {"Authorization": "Bearer {}".format(access_token)}
-    
-    articles = getNewsAPI()
-    tones = []
+	# Auth Step 5: Tokens are Returned to Application
+	response_data = json.loads(post_request.text)
+	access_token = response_data["access_token"]
+	refresh_token = response_data["refresh_token"]
+	token_type = response_data["token_type"]
+	expires_in = response_data["expires_in"]
+	#print("News response, articles")
+	#print(newsResponse['articles'])
+	# Auth Step 6: Use the access token to access Spotify API
+	authorization_header = {"Authorization": "Bearer {}".format(access_token)}
 
-    for article in articles:
-        tone = analyzeNewsArticles(article['title'])
-        tones.append(tone)
-    print(tones)
-    return render_template("index.html", news=articles, lenTone = len(tones), tones = tones)
+	articles = getNewsAPI()
+	tones = []
+
+	for article in articles:
+		tone = analyzeNewsArticles(article['title'])
+		tones.append(tone)
+	print(authorization_header)
+	print(tones)
+	playlists = []
+	for i in range(8):
+		playlist = getSpotifyPlaylist(authorization_header, tones[i])
+		print(playlist[0])
+		print("=========================================")
+		print()
+		playlists.append(playlist[0])
+
+	return render_template("index.html", news=articles, lenTone = 7, tones = tones, playlists = playlists)
 
 
 # Retrieves the top headlines from the news api
 def getNewsAPI():
-    apiKey = "b31dbb029fbc45c693c90dfad3065ee0"
-    country = "gb"
-    url = f"https://newsapi.org/v2/top-headlines?country={country}&apiKey={apiKey}"
-    #print("Getting news api from " + url)
-    response = requests.get(
-        url
-    )
-    newsResponse = json.loads(response.text)
-    return newsResponse['articles']
+	apiKey = "b31dbb029fbc45c693c90dfad3065ee0"
+	country = "gb"
+	url = "https://newsapi.org/v2/top-headlines?country="+country+"&apiKey="+apiKey
+	#print("Getting news api from " + url)
+	response = requests.get(
+		url
+	)
+	newsResponse = json.loads(response.text)
+	return newsResponse['articles']
 
 def analyzeNewsArticles(description):
-    baseUrl = "https://gateway-lon.watsonplatform.net/tone-analyzer/api"
-    date = "2019-10-30"
-    #url = f"{baseUrl}/v3/tone?text={description}&version={date}"
-    url = f"{baseUrl}/v3/tone"
-    ibmKey = "u_PrmzhBiR3WJ19oHXwFS526m71E1T8dcCCXcfdmmhtB"
-    #print(url)
-    response = requests.get(
-        url,
-        auth=('apiKey', ibmKey),
-        params={
-            "text":description,
-            "version":date
-        }
-    )
-    toneOfArticle = json.loads(response.text)
-    #print(f"response world {toneOfArticle}")
-    try:
-        print("description " + description + " " + toneOfArticle['document_tone']['tones'][0]['tone_name'])
-        return toneOfArticle['document_tone']['tones'][0]['tone_name']
-    except:
-        return "Failed"
+	baseUrl = "https://gateway-lon.watsonplatform.net/tone-analyzer/api"
+	date = "2019-10-30"
+	#url = f"{baseUrl}/v3/tone?text={description}&version={date}"
+	url = baseUrl+"/v3/tone"
+	ibmKey = "u_PrmzhBiR3WJ19oHXwFS526m71E1T8dcCCXcfdmmhtB"
+	#print(url)
+	response = requests.get(
+		url,
+		auth=('apiKey', ibmKey),
+		params={
+		    "text":description,
+		    "version":date
+		}
+	)
+	toneOfArticle = json.loads(response.text)
+	#print(f"response world {toneOfArticle}")
+	try:
+		print("description " + description + " " + toneOfArticle['document_tone']['tones'][0]['tone_name'])
+		return toneOfArticle['document_tone']['tones'][0]['tone_name']
+	except:
+		return "Failed"
+
+def getSpotifyPlaylist(header, query):
+	baseUrl = "https://api.spotify.com/v1/search"
+	response = requests.get(
+		baseUrl,
+		headers=header,
+		params={'q':"name:"+query, 'type':'playlist'}
+	)
+	playlistResponse = json.loads(response.text)
+	return playlistResponse['playlists']['items']
 
 if __name__ == "__main__":
-    app.run(debug=True, port=PORT)
+	app.run(debug=True, port=PORT)

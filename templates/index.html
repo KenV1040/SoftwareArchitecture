@@ -20,6 +20,7 @@
 					<p> {{ news[i].description }}</p>
 					<p> {{ tones[i] }}</p>
 					<a href={{news[i].url}}><p> Link to original news article</p></a>
+					<a href={{playlists[i].external_urls.spotify}}><p>Recommended playlist</p></a>
 				</div>
 			{%endfor%} 
 	</body>
